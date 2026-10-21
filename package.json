@@ -1,0 +1,24 @@
+{
+  "name": "norns-catalog",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A community catalog of norns & grid scripts, built as a static site with a maiden-compatible catalog.",
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate.mjs",
+    "validate:online": "node scripts/validate.mjs --online",
+    "enrich": "node scripts/enrich.mjs",
+    "import": "node scripts/import.mjs",
+    "build": "node scripts/build.mjs",
+    "serve": "node scripts/serve.mjs",
+    "dev": "npm run build && npm run serve",
+    "new": "node scripts/new-entry.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "marked": "^14.1.0",
+    "yaml": "^2.5.0"
+  }
+}
