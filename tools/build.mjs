@@ -25,7 +25,10 @@ const base = (cfg.basePath || "").replace(/\/+$/, "");
 const siteUrl = (cfg.siteUrl || "").replace(/\/+$/, "");
 const href = (p) => `${base}/${p.replace(/^\/+/, "")}`;
 const cache = readJSON(path.join(ROOT, ".cache", "github.json"), {});
+// likes = 👍/❤️/🎉/🚀 reactions on each script's giscus discussion, keyed by page path (written by enrich.mjs)
+const discussions = readJSON(path.join(ROOT, ".cache", "discussions.json"), {});
 const buildDate = new Date().toISOString();
+const NEW_DAYS = 30; // cards get a "new" badge for this long after `added`
 
 const esc = (s) =>
   String(s ?? "").replace(
@@ -188,6 +191,7 @@ for (const e of loadEntries()) {
     license: d.license || gh.license || null,
     cover: d.cover || gh.cover || null,
     stars: gh.stars ?? null,
+    likes: discussions[`${ENTRIES_DIR}/${e.slug}/`]?.likes ?? 0,
     updated: gh.pushedAt ? gh.pushedAt.slice(0, 10) : null,
     archived: !!gh.archived,
     added: d.added ? String(d.added).slice(0, 10) : null,
@@ -269,20 +273,27 @@ const aiBadge = (ai) =>
   `<span class="badge ai ai-${esc(ai)}" title="${esc(AI_LABEL[ai][1])}">${esc(AI_LABEL[ai][0])}</span>`;
 const tagLink = (t) =>
   `<a class="tag" href="${href(`?tag=${encodeURIComponent(t)}`)}">${esc(t)}</a>`;
+const isNew = (r) =>
+  !!r.added && Date.parse(buildDate) - Date.parse(r.added) < NEW_DAYS * 864e5;
+const likesStat = (r) =>
+  r.likes
+    ? `<span class="stat likes" title="Likes on ${esc(cfg.title)}: reactions in the script's discussion">♥ ${r.likes}</span>`
+    : "";
 
 function card(r) {
   const search = [r.name, r.author, r.description, ...r.tags, ...r.requires]
     .join(" ")
     .toLowerCase();
-  return `<li class="card" data-platform="${esc(r.platform)}" data-ai="${esc(r.ai)}" data-tags="${esc(r.tags.join(" "))}" data-requires="${esc(r.requires.join(" "))}" data-name="${esc(r.name)}" data-stars="${r.stars ?? 0}" data-updated="${esc(r.updated || "")}" data-added="${esc(r.added || "")}" data-search="${esc(search)}">
+  return `<li class="card" data-platform="${esc(r.platform)}" data-ai="${esc(r.ai)}" data-tags="${esc(r.tags.join(" "))}" data-requires="${esc(r.requires.join(" "))}" data-name="${esc(r.name)}" data-stars="${r.stars ?? 0}" data-likes="${r.likes}" data-updated="${esc(r.updated || "")}" data-added="${esc(r.added || "")}" data-search="${esc(search)}">
   <a class="card-link" href="${href(r.path)}">
-    <span class="card-title">${esc(r.name)}</span>
+    <span class="card-title">${esc(r.name)}${isNew(r) ? ` <span class="badge new" title="Added ${esc(r.added)}">new</span>` : ""}</span>
     <span class="card-author">by ${esc(r.author)}</span>
   </a>
   <p class="card-desc">${esc(r.description)}</p>
   <div class="card-meta">
     ${aiBadge(r.ai)}${r.platform !== "norns" ? `<span class="badge kind">${esc(PLATFORMS[r.platform].label)}</span>` : ""}
     ${r.requires.map((q) => `<span class="badge req">${esc(q)}</span>`).join("")}
+    ${likesStat(r)}
     ${r.stars != null ? `<span class="stat" title="GitHub stars">★ ${r.stars}</span>` : ""}
     ${r.updated ? `<span class="stat" title="Last push">${esc(r.updated)}</span>` : ""}
   </div>
@@ -291,6 +302,22 @@ function card(r) {
     .map(tagLink)
     .join("")}</div>
 </li>`;
+}
+
+/** The n most recent records by a date field ("added" or "updated"), newest first. */
+const latest = (key, n) =>
+  records
+    .filter((r) => r[key])
+    .sort((a, b) => b[key].localeCompare(a[key]) || a.name.localeCompare(b.name))
+    .slice(0, n);
+
+function freshPanel(title, page, feed, items, date) {
+  if (!items.length) return "";
+  return `<div class="fresh-panel">
+    <h2><a href="${href(page)}">${esc(title)}</a>${siteUrl ? ` <a class="feed" href="${href(feed)}" title="Atom feed">feed</a>` : ""}</h2>
+    <ol>${items.map((r) => `<li><a href="${href(r.path)}">${esc(r.name)}</a> <span class="fresh-by">by ${esc(r.author)}</span> <time datetime="${esc(date(r))}">${esc(date(r))}</time></li>`).join("")}</ol>
+    <a class="fresh-more" href="${href(page)}">see all →</a>
+  </div>`;
 }
 
 function chipGroup(name, label, counts, min = 1) {
@@ -337,14 +364,22 @@ write(
   <h1>${esc(cfg.tagline)}</h1>
   <p>${records.length} scripts. Search, filter by tag or hardware, and install straight from maiden. Handmade or AI-assisted, always disclosed. <a href="${href("about/")}">How it works</a></p>
 </section>
+<section class="fresh" aria-label="What's new">
+  ${freshPanel("just added", "new/", "feed-new.xml", latest("added", 5), (r) => r.added)}
+  ${freshPanel("recently updated", "updated/", "feed-updated.xml", latest("updated", 5), (r) => r.updated)}
+</section>
 <section class="controls" aria-label="Search and filters">
   <div class="search-row">
-    <input id="q" type="search" placeholder="search scripts, authors, tags…" autocomplete="off" aria-label="Search">
+    <div class="search-box">
+      <input id="q" type="search" placeholder="search scripts, authors, tags…" autocomplete="off" aria-label="Search">
+      <button id="q-clear" class="search-clear" type="button" aria-label="Clear search" title="Clear search" hidden>×</button>
+    </div>
     <select id="sort" aria-label="Sort">
       <option value="name">name</option>
       <option value="updated">recently updated</option>
-      <option value="stars">most stars</option>
       <option value="added">recently added</option>
+      <option value="likes">most liked</option>
+      <option value="stars">most GitHub stars</option>
     </select>
   </div>
   <div class="filter-row">
@@ -394,7 +429,8 @@ for (const r of records) {
       : `<section class="install"><h2>install</h2><p>Get the script from <a href="${esc(r.repo)}">its repository</a> and follow its README.</p></section>`;
 
   const discussion = giscusReady
-    ? `<section class="discussion"><h2>discussion</h2>
+    ? `<section class="discussion" id="discussion"><h2>discussion</h2>
+<p class="hint">Like this script? React with 👍 or ❤️ below (needs a GitHub account). Reactions count as likes (♥) on ${esc(cfg.title)}, updated daily.</p>
 <script src="https://giscus.app/client.js" data-repo="${esc(cfg.giscus.repo)}" data-repo-id="${esc(cfg.giscus.repoId)}" data-category="${esc(cfg.giscus.category)}" data-category-id="${esc(cfg.giscus.categoryId)}" data-mapping="pathname" data-strict="1" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="en" data-loading="lazy" crossorigin="anonymous" async></script>
 </section>`
     : "";
@@ -432,11 +468,11 @@ for (const r of records) {
       canonical: r.path,
       body: `
 <article class="entry">
-  <p class="crumbs"><a href="${href("")}">scripts</a> / ${esc(PLATFORMS[r.platform].label)}</p>
+  <p class="crumbs"><a class="back" href="${href("")}" data-back>← all scripts</a> <span class="crumb-sep">/</span> ${esc(PLATFORMS[r.platform].label)}</p>
   <header class="entry-head">
-    <h1>${esc(r.name)}</h1>
+    <h1>${esc(r.name)}${isNew(r) ? ` <span class="badge new" title="Added ${esc(r.added)}">new</span>` : ""}</h1>
     <p class="lede">${esc(r.description)}</p>
-    <div class="card-meta">${aiBadge(r.ai)} <span class="ai-note">${esc(AI_LABEL[r.ai][1])}</span></div>
+    <div class="card-meta">${aiBadge(r.ai)} <span class="ai-note">${esc(AI_LABEL[r.ai][1])}</span>${giscusReady ? ` <a class="like-link" href="#discussion" title="React in the discussion to like it">♥ ${r.likes || ""} like</a>` : likesStat(r)}</div>
     ${r.archived ? '<p class="warn">This repository is archived and may no longer be maintained.</p>' : ""}
   </header>
   ${r.cover ? `<img class="cover" src="${esc(r.cover)}" alt="${esc(r.name)} screenshot" loading="lazy">` : ""}
@@ -471,13 +507,7 @@ for (const r of records) {
 
 // new & recently updated: static pages plus Atom feeds (for feed readers and fediverse bots)
 const FEED_SIZE = 50;
-const newest = (key) =>
-  records
-    .filter((r) => r[key])
-    .sort(
-      (a, b) => b[key].localeCompare(a[key]) || a.name.localeCompare(b.name),
-    )
-    .slice(0, FEED_SIZE);
+const newest = (key) => latest(key, FEED_SIZE);
 const lists = [
   {
     page: "new/",

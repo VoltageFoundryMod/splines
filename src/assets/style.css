@@ -60,6 +60,18 @@ code, .cmd { font-family: var(--mono); font-size: .9em; }
 .hero { padding: 28px 0 18px; }
 .hero h1 { font: 600 clamp(26px, 5vw, 40px)/1.1 var(--mono); letter-spacing: -.03em; margin: 0 0 10px; }
 .hero p { color: var(--muted); max-width: 60ch; margin: 0; }
+/* what's new strip on the home page */
+.fresh { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin: 0 0 18px; }
+.fresh-panel { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: var(--radius); padding: 12px 14px; font-size: 14px; }
+.fresh-panel h2 { font: 600 13px var(--mono); text-transform: lowercase; letter-spacing: .04em; margin: 0 0 6px; display: flex; gap: 10px; align-items: baseline; }
+.fresh-panel h2 a { color: var(--ink); text-decoration: none; }
+.fresh-panel h2 .feed { color: var(--muted); font-weight: 400; font-size: 12px; margin-left: auto; }
+.fresh-panel ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.fresh-panel li { display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+.fresh-panel li a { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
+.fresh-by { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+.fresh-panel time { color: var(--muted); font: 12px var(--mono); white-space: nowrap; }
+.fresh-more { display: inline-block; margin-top: 6px; font: 12px var(--mono); }
 
 /* controls */
 .controls { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 12px 0 8px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
@@ -67,7 +79,12 @@ code, .cmd { font-family: var(--mono); font-size: .9em; }
 #q, #sort {
   font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px;
 }
-#q { flex: 1; min-width: 0; font-family: var(--mono); font-size: 15px; }
+.search-box { position: relative; flex: 1; min-width: 0; display: flex; }
+#q { flex: 1; min-width: 0; font-family: var(--mono); font-size: 15px; padding-right: 38px; }
+#q::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; } /* our own clear button instead */
+.search-clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border: 0; border-radius: 50%; background: var(--chip); color: var(--muted); font: 18px/1 var(--mono); cursor: pointer; display: grid; place-items: center; padding: 0; }
+.search-clear:hover, .search-clear:focus-visible { color: var(--ink); outline: 2px solid var(--accent); outline-offset: 1px; }
+.search-clear[hidden] { display: none; }
 #q:focus, #sort:focus, .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .filter-row { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 8px; }
 .chips { border: 0; margin: 0; padding: 4px 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-width: 0; }
@@ -103,12 +120,19 @@ code, .cmd { font-family: var(--mono); font-size: .9em; }
 .badge.ai-assisted { color: var(--warn); border-color: currentColor; }
 .badge.ai-generated { color: var(--gen); border-color: currentColor; }
 .badge.ai-unknown { border-style: dashed; }
+.badge.new { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; vertical-align: middle; }
+.stat.likes { color: var(--accent); }
+.like-link { font: 13px var(--mono); text-decoration: none; border: 1px solid var(--accent); border-radius: 999px; padding: 1px 10px; }
+.like-link:hover { background: var(--accent); color: var(--accent-ink); }
 .stat { color: var(--muted); font-family: var(--mono); }
 .empty { color: var(--muted); text-align: center; padding: 40px 0; }
 
 /* entry page */
 .crumbs { font: 13px var(--mono); color: var(--muted); margin: 8px 0 0; }
 .crumbs a { color: var(--muted); }
+.crumbs .back { color: var(--ink); text-decoration: none; font-weight: 600; }
+.crumbs .back:hover { color: var(--accent); }
+.crumb-sep { opacity: .5; }
 .entry-head h1 { font: 600 clamp(28px, 6vw, 44px)/1.1 var(--mono); margin: 10px 0 6px; letter-spacing: -.03em; overflow-wrap: anywhere; }
 .lede { font-size: 18px; margin: 0 0 10px; max-width: 60ch; }
 .ai-note { color: var(--muted); font-size: 13px; }

@@ -5,7 +5,7 @@
 //   node tools/enrich.mjs [--only name1,name2]
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT, loadEntries, githubSlug, gh, readJSON, readmeFile } from './lib.mjs';
+import { ROOT, loadConfig, loadEntries, githubSlug, gh, readJSON, readmeFile } from './lib.mjs';
 
 const args = process.argv.slice(2);
 const only = args.includes('--only') ? new Set(args[args.indexOf('--only') + 1].split(',')) : null;
@@ -86,3 +86,48 @@ for (const e of loadEntries()) {
 fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
 fs.writeFileSync(cacheFile, JSON.stringify(cache, null, 2));
 console.log(`✓ enriched ${fetched} repos, ${readmes} READMEs (${Object.keys(cache).length} cached).`);
+
+// Likes: positive reactions on each script's giscus discussion. giscus (mapping "pathname") titles each
+// discussion with the page path without the leading slash, e.g. "scripts/NEVE/", which is also our record path.
+// GraphQL needs a token; without one the previous cache is kept.
+const giscus = loadConfig().giscus || {};
+const LIKES = ['THUMBS_UP', 'HEART', 'HOORAY', 'ROCKET'];
+if (process.env.GITHUB_TOKEN && giscus.repo && giscus.categoryId) {
+  const [owner, name] = giscus.repo.split('/');
+  const likes = {};
+  let after = null;
+  let ok = true;
+  do {
+    const res = await fetch('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.GITHUB_TOKEN}`, 'User-Agent': 'norns-catalog', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: `query($owner: String!, $name: String!, $cat: ID!, $after: String) {
+          repository(owner: $owner, name: $name) {
+            discussions(first: 100, after: $after, categoryId: $cat) {
+              pageInfo { hasNextPage endCursor }
+              nodes { title comments { totalCount } reactionGroups { content reactors { totalCount } } }
+            }
+          }
+        }`,
+        variables: { owner, name, cat: giscus.categoryId, after },
+      }),
+    });
+    const j = res.ok ? await res.json() : null;
+    const page = j?.data?.repository?.discussions;
+    if (!page) {
+      console.warn(`! could not read discussions (${res.status}${j?.errors ? `: ${j.errors[0].message}` : ''}); keeping cached likes.`);
+      ok = false;
+      break;
+    }
+    for (const d of page.nodes) {
+      const n = d.reactionGroups.filter((g) => LIKES.includes(g.content)).reduce((s, g) => s + g.reactors.totalCount, 0);
+      likes[d.title.replace(/^\/+/, '')] = { likes: n, comments: d.comments.totalCount };
+    }
+    after = page.pageInfo.hasNextPage ? page.pageInfo.endCursor : null;
+  } while (after);
+  if (ok) {
+    fs.writeFileSync(path.join(ROOT, '.cache', 'discussions.json'), JSON.stringify(likes, null, 2));
+    console.log(`✓ likes from ${Object.keys(likes).length} discussions.`);
+  }
+}

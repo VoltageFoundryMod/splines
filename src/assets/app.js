@@ -30,6 +30,18 @@
     }),
   );
 
+  // ---- back link: return to the list as it was (filters, scroll) when we came from this site ----
+  const back = document.querySelector('a[data-back]');
+  let fromHere = false;
+  try { fromHere = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch (e) { /* bad referrer */ }
+  if (back && fromHere && history.length > 1) {
+    back.textContent = '← back';
+    back.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      history.back();
+    });
+  }
+
   // ---- catalog list ----
   const list = document.getElementById('results');
   if (!list) return;
@@ -40,6 +52,7 @@
   const countEl = document.getElementById('count');
   const emptyEl = document.getElementById('empty');
   const clearBtn = document.getElementById('clear');
+  const qClear = document.getElementById('q-clear');
   const groups = {}; // group name -> Set of selected values
   const PARAM = { platform: 'platform', ai: 'ai', requires: 'req', tags: 'tag' };
   // how values inside one group combine: "any" = OR, "all" = AND
@@ -84,6 +97,7 @@
   const sorters = {
     name: (a, b) => a.dataset.name.localeCompare(b.dataset.name),
     stars: (a, b) => b.dataset.stars - a.dataset.stars || sorters.name(a, b),
+    likes: (a, b) => b.dataset.likes - a.dataset.likes || sorters.stars(a, b),
     updated: (a, b) => (b.dataset.updated || '').localeCompare(a.dataset.updated || '') || sorters.name(a, b),
     added: (a, b) => (b.dataset.added || '').localeCompare(a.dataset.added || '') || sorters.name(a, b),
   };
@@ -115,6 +129,7 @@
     for (const [g, name] of Object.entries(PARAM)) (groups[g] || []).forEach((v) => p.append(name, v));
     const active = [...p.keys()].some((k) => k !== 'sort');
     clearBtn.hidden = !active;
+    qClear.hidden = !q.value;
     const qs = p.toString();
     history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
   }
@@ -133,8 +148,21 @@
 
   let t;
   q.addEventListener('input', () => {
+    qClear.hidden = !q.value;
     clearTimeout(t);
     t = setTimeout(apply, 80);
+  });
+  const clearSearch = () => {
+    q.value = '';
+    apply();
+    q.focus();
+  };
+  qClear.addEventListener('click', clearSearch);
+  q.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && q.value) {
+      ev.preventDefault();
+      clearSearch();
+    }
   });
   sort.addEventListener('change', apply);
   clearBtn.addEventListener('click', () => {

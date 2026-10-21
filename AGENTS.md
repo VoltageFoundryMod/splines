@@ -39,7 +39,7 @@ src/assets/               style.css, app.js (client filtering), favicon.svg
 src/about.md              about/submit/maiden page ({{title}}, {{catalog}}, {{repo}} placeholders)
 tools/lib.mjs             config, PLATFORMS, entry loading, front matter, VALIDATION RULES (single source of truth)
 tools/validate.mjs        CLI validator (GitHub Actions annotations when GITHUB_ACTIONS is set)
-tools/enrich.mjs          GitHub API metadata + README cache (20h TTL)
+tools/enrich.mjs          GitHub API metadata + README cache (20h TTL); likes (👍❤️🎉🚀 reactions on giscus discussions, GraphQL) → .cache/discussions.json
 tools/import.mjs          importers: maiden catalogs, awesome lists (incl. p3r7/awesome-monome-norns tables), GitHub topics
 tools/build.mjs           renders everything into dist/
 tools/serve.mjs           local static server honoring basePath
@@ -81,6 +81,7 @@ When adding a field: update `validateEntry` in `lib.mjs`, `templates/entry.md`, 
 - **`catalog.json` shape is a contract with maiden.** Keep `file_info`, `catalog_name`, `date`, `entries[]` with `project_name`, `project_url`, `author`, `description`, `discussion_url?`, `documentation_url?`, `tags`. Only `PLATFORMS[platform].maiden === true` entries (norns) go in it.
 - **Paths:** always build site URLs with `href()` (prefixes `basePath`). `basePath` is `""` now that the site is on its custom domain (`splines.vfmod.com`); a project Pages site would use `/<repo>`.
 - **Importer never overwrites** existing entries and dedupes by normalized repo URL. Imported entries are reviewed via the PR that `import.yml` opens.
+- **Likes, not star ratings.** The site is static, so "rating" = positive reactions on each script's giscus discussion (titled with the page path, e.g. `scripts/NEVE/`), counted by `enrich.mjs` and shown as ♥ on cards plus a "most liked" sort. ★ means GitHub stars; keep the two distinct.
 - **The build must work offline.** GitHub metadata and READMEs come only from `.cache/` (written by `enrich.mjs`). Missing cache just means fewer stats on cards and no README on script pages.
 - Styling: CSS custom properties on `:root`, with dark mode via `prefers-color-scheme` plus a `data-theme` override (toggle in header). Keep both themes working and the layout fine at 390px width.
 - The author develops on **Windows**; keep scripts cross-platform (use `path`, normalize `\` to `/` for display paths, no shell-specific npm scripts).

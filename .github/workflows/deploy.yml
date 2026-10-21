@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  discussions: read # likes come from reactions on giscus discussions
   pages: write
   id-token: write
 
