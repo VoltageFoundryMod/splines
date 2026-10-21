@@ -5,11 +5,13 @@ repo: https://github.com/xmacex/fx_filter
 author: xmacex
 description: Filter effect for norns fx framework
 tags:
-  - uncategorized
+  - mod
+  - fx
+  - audio-fx
+  - filter
 ai: unknown
 source: imported
 origin: github-topic:norns
-added: 2026-10-21
 ---
 
-_Imported automatically from `github-topic:norns`. Are you the author? Claim this entry with a pull request: set `source: submitted`, fill in the `ai` disclosure, and add notes or screenshots here._
+An effect for the [fx](../fx/) mod framework. Install and enable **fx** first, then this mod (SYSTEM > MODS), and restart norns.

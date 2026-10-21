@@ -6,12 +6,14 @@ author: xmacex
 description: a fixed filter bank
 tags:
   - audio-fx
+  - mod
+  - fx
+  - filter
 ai: unknown
 source: imported
 origin: catalog:community
-added: 2026-10-21
 discussion: https://llllllll.co/t/fixed-filter-banking-crisis/71735
 docs: https://github.com/xmacex/fixed-filter-banking-crisis
 ---
 
-_Imported automatically from `catalog:community`. Are you the author? Claim this entry with a pull request: set `source: submitted`, fill in the `ai` disclosure, and add notes or screenshots here._
+An effect for the [fx](../fx/) mod framework. Install and enable **fx** first, then this mod (SYSTEM > MODS), and restart norns.

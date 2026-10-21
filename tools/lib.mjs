@@ -37,7 +37,7 @@ export function parseFrontMatter(text) {
 }
 
 export function stringifyFrontMatter(data, body = '') {
-  return `---\n${YAML.stringify(data, { lineWidth: 0 }).trimEnd()}\n---\n\n${body.trim()}\n`;
+  return `---\n${YAML.stringify(data, { lineWidth: 0 }).trimEnd()}\n---\n${body.trim() ? `\n${body.trim()}\n` : ''}`;
 }
 
 export function normalizeRepo(url) {
@@ -55,6 +55,9 @@ export function githubSlug(url) {
   const m = normalizeRepo(url).match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)/);
   return m ? `${m[1]}/${m[2]}` : null;
 }
+
+/** Where enrich.mjs caches a repo's README (slug = "owner/repo", already lowercase). */
+export const readmeFile = (slug) => path.join(ROOT, '.cache', 'readme', ...slug.split('/')) + '.md';
 
 /** Load every scripts/<slug>/index.md entry. */
 export function loadEntries() {
@@ -103,6 +106,9 @@ export function validateEntry(entry) {
   if (!AI_VALUES.includes(d.ai)) errs.push(`"ai" must be one of: ${AI_VALUES.join(', ')}`);
   if (d.source !== undefined && !SOURCE_VALUES.includes(d.source)) errs.push(`"source" must be one of: ${SOURCE_VALUES.join(', ')}`);
   if (d.source !== 'imported' && d.ai === 'unknown') errs.push('"ai: unknown" is only allowed for imported entries; submitters must disclose');
+  // drives the /new/ page and feed; the initial import has no date, so it doesn't flood them
+  if (d.added !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(String(d.added))) errs.push('"added" must be a date like 2026-10-21');
+  if (d.added === undefined && d.source !== 'imported') errs.push('"added" is required: the date the entry is submitted, like 2026-10-21');
   for (const k of ['discussion', 'docs', 'cover']) {
     if (d[k] !== undefined && !/^https:\/\/[^\s]+$/.test(String(d[k]))) errs.push(`"${k}" must be an https URL`);
   }

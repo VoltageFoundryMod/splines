@@ -2,17 +2,17 @@
   "title": "splines",
   "tagline": "a community catalog of monome scripts",
   "description": "Discover, search and install scripts for monome norns, grid, iii, crow and teletype. Handmade or AI-assisted, always disclosed.",
-  "siteUrl": "https://carlosedp.github.io/norns-catalog",
-  "basePath": "/norns-catalog",
-  "cname": "",
-  "repo": "carlosedp/norns-catalog",
+  "siteUrl": "https://splines.vfmod.com",
+  "basePath": "",
+  "cname": "splines.vfmod.com",
+  "repo": "VoltageFoundryMod/splines",
   "branch": "main",
   "catalogName": "splines",
   "giscus": {
-    "repo": "",
-    "repoId": "",
+    "repo": "VoltageFoundryMod/splines",
+    "repoId": "R_kgDOVSowcQ",
     "category": "Scripts",
-    "categoryId": ""
+    "categoryId": "DIC_kwDOVSowcc4DJR3U"
   },
   "import": {
     "communityCatalogs": [

@@ -15,12 +15,16 @@ requires: [grid]
 # Required disclosure: none | assisted | generated   (see the about page)
 ai: none
 license: MIT
+# Today's date (YYYY-MM-DD); puts the script on the "new" page and feed. `npm run new` fills it in.
+added: 2026-01-01
 # Optional:
 # discussion: https://...   (an existing thread anywhere)
 # docs: https://...         (documentation page)
 # cover: https://...        (screenshot URL; or drop a cover.png in your repo root)
 ---
 
-Describe the script here: what it is, how to play it, the controls (E1/E2/E3, K2/K3, grid layout), and anything people should know.
-
-You can add screenshots by placing images next to this file and linking them like `![screen](screen.png)`.
+<!--
+Optional "catalog notes" go below this comment; they show above your repo's README on the script page.
+Your README is the documentation, so keep notes short: "needs crow v4", "best with a 128 grid", a known issue.
+Leave this empty if there's nothing to add. (This comment is not published.)
+-->

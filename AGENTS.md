@@ -20,7 +20,7 @@ AI-assisted scripts are welcome, but **AI disclosure is mandatory** (`ai:` field
 npm install
 npm run validate            # schema + duplicate checks (offline)
 npm run validate:online     # + checks repos exist and have a root .lua (uses GITHUB_TOKEN if set)
-npm run enrich              # GitHub stars/last push/license/cover → .cache/github.json
+npm run enrich              # GitHub stars/last push/license/cover → .cache/github.json, READMEs → .cache/readme/ (--only a,b)
 npm run import -- --only community --limit 24   # seed/import entries; --dry-run to preview
 npm run build               # → dist/
 npm run serve               # → http://localhost:8080/<basePath>/
@@ -39,7 +39,7 @@ src/assets/               style.css, app.js (client filtering), favicon.svg
 src/about.md              about/submit/maiden page ({{title}}, {{catalog}}, {{repo}} placeholders)
 tools/lib.mjs             config, PLATFORMS, entry loading, front matter, VALIDATION RULES (single source of truth)
 tools/validate.mjs        CLI validator (GitHub Actions annotations when GITHUB_ACTIONS is set)
-tools/enrich.mjs          GitHub API metadata cache (20h TTL)
+tools/enrich.mjs          GitHub API metadata + README cache (20h TTL)
 tools/import.mjs          importers: maiden catalogs, awesome lists (incl. p3r7/awesome-monome-norns tables), GitHub topics
 tools/build.mjs           renders everything into dist/
 tools/serve.mjs           local static server honoring basePath
@@ -62,9 +62,12 @@ site.config.json          title, siteUrl, basePath, cname, repo, giscus, import 
 | `ai` | ✓ | `none` \| `assisted` \| `generated`; `unknown` is allowed **only** with `source: imported` |
 | `source` | | `submitted` (default) \| `imported` |
 | `origin` | | where an import came from, e.g. `catalog:community`, `github-topic:norns` |
-| `license`, `discussion`, `docs`, `cover`, `added` | | optional; URLs must be https |
+| `added` | ✓* | `YYYY-MM-DD`, drives `/new/` and its feed. Required unless `source: imported`; the initial seed import has none so it doesn't flood "new". `npm run new` fills it in |
+| `license`, `discussion`, `docs`, `cover` | | optional; URLs must be https |
 
-The entry body (Markdown) is rendered on the script page.
+The entry body is optional **catalog notes**, rendered above the upstream README on the script page. PRs only need front matter; the README is the documentation. HTML comments in the body are not published (the template hint is one).
+
+READMEs are rendered by `renderReadme()` in `build.mjs`: raw HTML is never passed through (only `<img>` is rebuilt from src/alt/width), relative links/images are rewritten to the repo's blob/raw URLs (`fromRepo()`), and headings shift down one level.
 
 The URL slug is the folder name: `/scripts/<name>/`, stable even if the platform changes. Duplicate names and duplicate repos (per platform) are rejected by `validate.mjs`. Adding a platform is one line in `PLATFORMS`.
 
@@ -76,9 +79,9 @@ When adding a field: update `validateEntry` in `lib.mjs`, `templates/entry.md`, 
 - **Cards are prerendered.** `app.js` only filters and sorts existing DOM nodes using `data-*` attributes on each `.card`. If you add a filter, add the `data-*` attribute in `card()` in `build.mjs` and the group in `app.js` (`PARAM` = URL param name, `MODE` = `any`/`all`). Filter state lives in the URL query (shareable links).
 - **Everything user-supplied is untrusted.** Escape with `esc()` in templates. Markdown goes through the custom `marked` renderer that escapes raw HTML and neutralizes non-http(s) links. Never use `innerHTML` with entry data in `app.js`.
 - **`catalog.json` shape is a contract with maiden.** Keep `file_info`, `catalog_name`, `date`, `entries[]` with `project_name`, `project_url`, `author`, `description`, `discussion_url?`, `documentation_url?`, `tags`. Only `PLATFORMS[platform].maiden === true` entries (norns) go in it.
-- **Paths:** always build site URLs with `href()` (prefixes `basePath`). `basePath` is `/norns-catalog` for a project Pages site, `""` with a custom domain.
+- **Paths:** always build site URLs with `href()` (prefixes `basePath`). `basePath` is `""` now that the site is on its custom domain (`splines.vfmod.com`); a project Pages site would use `/<repo>`.
 - **Importer never overwrites** existing entries and dedupes by normalized repo URL. Imported entries are reviewed via the PR that `import.yml` opens.
-- **The build must work offline.** GitHub metadata comes only from `.cache/github.json` (written by `enrich.mjs`). Missing cache just means fewer stats on cards.
+- **The build must work offline.** GitHub metadata and READMEs come only from `.cache/` (written by `enrich.mjs`). Missing cache just means fewer stats on cards and no README on script pages.
 - Styling: CSS custom properties on `:root`, with dark mode via `prefers-color-scheme` plus a `data-theme` override (toggle in header). Keep both themes working and the layout fine at 390px width.
 - The author develops on **Windows**; keep scripts cross-platform (use `path`, normalize `\` to `/` for display paths, no shell-specific npm scripts).
 - Commit style: short imperative subject, e.g. `build: add author pages`.
@@ -97,8 +100,8 @@ Proposals for the open ideas. Check with the maintainer before implementing any 
 1. **Needs vs. "better with"**: split hardware into `requires` (won't work without) and `supports` (optional, "better with grid"). The hardware filter matches either; badges are styled differently.
 2. ~~**Platforms**~~: done, see `platform` above.
 3. **Screenshots from norns**: document capturing the screen from maiden's REPL (`_norns.screen_export_png("/home/we/dust/<name>.png")`, verify the API on current norns), then copying it via SMB/SFTP. The 128×64 image renders crisp thanks to `image-rendering: pixelated`.
-4. **Upstream README**: fetch each repo's README during `enrich.mjs` (cached), render it sanitized on the script page, and rewrite relative links/images to the repo's blob/raw URLs. The entry body becomes optional "catalog notes" shown above or instead of the README.
-5. **Minimal PRs**: only front matter is required; the README is the documentation. This avoids duplicated, stale text in this repo.
+4. ~~**Upstream README**~~: done, see the data model section.
+5. ~~**Minimal PRs**~~: done; the body is optional catalog notes.
 6. **Author filter/pages**: clickable author on cards (`?author=` filter) plus `/authors/<author>/` pages.
-7. **New & updated**: `/new/` (by `added`) and `/updated/` (by upstream push date) pages, plus Atom feeds (`feed-new.xml`, `feed-updated.xml`), useful for fediverse/RSS bots.
+7. ~~**New & updated**~~: done. `/new/` + `feed-new.xml` (by `added`), `/updated/` + `feed-updated.xml` (by upstream push date), 50 items each.
 8. **Dynamic description**: don't rewrite entry files automatically. At build time, fall back to the GitHub repo description when `description` is missing, and keep the curated line when present.

@@ -43,11 +43,12 @@ ai: assisted             # none | assisted | generated
 license: MIT
 ---
 
-Anything below the front matter shows up on the script's page:
-how to use it, controls, screenshots (put images next to index.md).
+Optional "catalog notes" go here, shown above your README.
 ```
 
-1. Open a pull request. A check validates the entry and confirms the repo exists (for norns, that it has a `.lua` script at its root). Once merged, the site rebuilds in a minute or two.
+The script page shows your repository's README, so there's no need to copy your docs here; keep them in one place.
+
+4. Open a pull request. A check validates the entry and confirms the repo exists (for norns, that it has a `.lua` script at its root). Once merged, the site rebuilds in a minute or two.
 
 Already listed through an import? Claim it: edit the entry, set `source: submitted`, and fill in `ai`.
 

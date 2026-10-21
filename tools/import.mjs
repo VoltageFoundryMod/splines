@@ -212,8 +212,8 @@ if (!dryRun) {
   for (const data of added) {
     const dir = path.join(ROOT, ENTRIES_DIR, data.name);
     fs.mkdirSync(dir, { recursive: true });
-    const body = `_Imported automatically from \`${data.origin}\`. Are you the author? Claim this entry with a pull request: set \`source: submitted\`, fill in the \`ai\` disclosure, and add notes or screenshots here._`;
-    fs.writeFileSync(path.join(dir, 'index.md'), stringifyFrontMatter(data, body));
+    // no body: the script page shows the upstream README, and a "claim it" note for imported entries
+    fs.writeFileSync(path.join(dir, 'index.md'), stringifyFrontMatter(data));
   }
 }
 console.log(`${dryRun ? '[dry run] would add' : '✓ added'} ${added.length} new entries.`);

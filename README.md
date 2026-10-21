@@ -18,7 +18,7 @@ npm install
 npm run import -- --only community --limit 24   # seed some entries (optional)
 npm run validate        # check all entries
 npm run build           # → dist/
-npm run serve           # → http://localhost:8080/norns-catalog/
+npm run serve           # → http://localhost:8080/ (plus basePath, if set)
 npm run new -- my-script   # scaffold scripts/my-script/index.md (--platform iii|crow|teletype)
 ```
 
@@ -32,7 +32,7 @@ src/about.md              about / submit / maiden page
 tools/
   lib.mjs                 config, platforms, entry loading, validation rules
   validate.mjs            schema + duplicates; --online checks repos exist and have a root .lua
-  enrich.mjs              stars / last push / license / cover → .cache/github.json
+  enrich.mjs              stars / last push / license / cover / README → .cache/
   import.mjs              pull new entries from external sources
   build.mjs               HTML pages, catalog.json, index.json, sitemap
   serve.mjs               local preview server
@@ -56,7 +56,7 @@ discussion: https://...    # optional
 docs: https://...          # optional
 cover: https://...         # optional screenshot
 ---
-Markdown notes shown on the script page.
+Optional short "catalog notes", shown above the repo's README on the script page.
 ```
 
 ## Deploying

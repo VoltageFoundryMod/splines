@@ -48,7 +48,7 @@ code, .cmd { font-family: var(--mono); font-size: .9em; }
 }
 .brand { display: inline-flex; align-items: center; gap: 10px; font: 600 20px/1 var(--mono); color: var(--ink); text-decoration: none; letter-spacing: -.02em; }
 .brand-mark { display: block; }
-.site-header nav { display: flex; align-items: center; gap: 16px; font-family: var(--mono); font-size: 14px; }
+.site-header nav { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-family: var(--mono); font-size: 14px; }
 .site-header nav a { color: var(--muted); text-decoration: none; }
 .site-header nav a:hover { color: var(--ink); }
 .theme-toggle { background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: grid; place-items: center; padding: 0; }
@@ -116,7 +116,7 @@ code, .cmd { font-family: var(--mono); font-size: .9em; }
 .cover { display: block; max-width: 100%; margin: 20px 0 0; border-radius: var(--radius); border: 1px solid var(--line); image-rendering: pixelated; background: #000; }
 .entry-grid { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr) 280px; margin-top: 24px; }
 @media (max-width: 760px) { .entry-grid { grid-template-columns: minmax(0, 1fr); } .entry-side { order: -1; } }
-.entry-main h2 { font: 600 14px var(--mono); text-transform: lowercase; color: var(--muted); letter-spacing: .04em; margin: 0 0 8px; }
+.entry-main > section > h2 { font: 600 14px var(--mono); text-transform: lowercase; color: var(--muted); letter-spacing: .04em; margin: 0 0 8px; }
 .entry-main > section { margin-bottom: 28px; }
 .copy-row { display: flex; gap: 8px; align-items: stretch; }
 .cmd { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; border: 1px solid var(--line); background: #0b0b0b; color: #e9e7e1; padding: 10px 12px; border-radius: 8px; }
@@ -127,6 +127,10 @@ code, .cmd { font-family: var(--mono); font-size: .9em; }
 .entry-side dt { color: var(--muted); font: 12px/1.9 var(--mono); }
 .entry-side dd { margin: 0; overflow-wrap: anywhere; }
 .edit { margin: 12px 0 0; font: 12px var(--mono); }
+.claim { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
+.readme-src { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.readme-src a { color: var(--muted); }
+.notes + .readme { border-top: 1px solid var(--line); padding-top: 20px; }
 
 /* prose */
 .prose { max-width: 70ch; }

@@ -7,7 +7,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { Marked } from 'marked';
-import { ROOT, ENTRIES_DIR, PLATFORMS, loadConfig, loadEntries, validateEntry, githubSlug, readJSON } from './lib.mjs';
+import { ROOT, ENTRIES_DIR, PLATFORMS, loadConfig, loadEntries, validateEntry, githubSlug, readJSON, readmeFile } from './lib.mjs';
 
 const cfg = loadConfig();
 const DIST = path.join(ROOT, 'dist');
@@ -21,23 +21,77 @@ const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const safeUrl = (u) => (/^(https?:|mailto:|#|\/|\.\.?\/)/i.test(u || '') || !/^[a-z]+:/i.test(u || '') ? u : '#');
 
+// While an upstream README renders, this holds { slug, branch, dir } so relative links and images point back
+// at the repo, the way GitHub resolves them. null for entry notes.
+let readmeCtx = null;
+
+/** Rewrite a README URL: relative paths → github.com blob (links) or raw.githubusercontent.com (images). */
+function fromRepo(u, raw) {
+  if (!readmeCtx || !u || u.startsWith('#')) return u;
+  const { slug, branch, dir } = readmeCtx;
+  if (/^([a-z][a-z0-9+.-]*:|\/\/)/i.test(u)) {
+    // images linked to a GitHub blob page don't render; use the raw file instead
+    const blob = raw && u.match(/^https:\/\/github\.com\/([^/]+\/[^/]+)\/(?:blob|raw)\/(.+?)(\?.*)?$/);
+    return blob ? `https://raw.githubusercontent.com/${blob[1]}/${blob[2]}` : u;
+  }
+  const [, p, rest = ''] = u.match(/^([^?#]*)(.*)$/);
+  const file = path.posix.normalize(p.startsWith('/') ? p.slice(1) : path.posix.join(dir, p)).replace(/^(\.\.\/)+|^\.$/g, '');
+  return raw ? `https://raw.githubusercontent.com/${slug}/${branch}/${file}` : `https://github.com/${slug}/blob/${branch}/${file}${rest}`;
+}
+
+const attr = (tag, name) => {
+  const m = tag.match(new RegExp(`\\s${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i'));
+  return m && (m[1] ?? m[2] ?? m[3]);
+};
+const imgTag = (src, alt, title, width) =>
+  `<img src="${esc(safeUrl(src))}" alt="${esc(alt)}"${title ? ` title="${esc(title)}"` : ''}${width ? ` width="${width}"` : ''} loading="lazy">`;
+
+// Raw HTML is never passed through. In READMEs, <img> tags are rebuilt from their src/alt/width, other tags are
+// dropped and their text kept (escaped, entities like &nbsp; still work). In entry notes it shows as text,
+// except <!-- comments -->, which are dropped everywhere (the entry template uses one for its hint).
+function rawHtml(text) {
+  text = text.replace(/<!--[\s\S]*?(-->|$)/g, '');
+  if (!readmeCtx) return esc(text);
+  return text
+    .replace(/<(script|style)\b[\s\S]*?(<\/\1>|$)/gi, '')
+    .split(/(<img\b[^>]*>)/i)
+    .map((part, i) => {
+      if (i % 2) return imgTag(fromRepo(attr(part, 'src'), true), attr(part, 'alt') || '', null, attr(part, 'width')?.match(/^\d+$/)?.[0]);
+      return esc(part.replace(/<\/?[a-z][^>]*>/gi, '')).replace(/&amp;(#?\w+);/g, '&$1;');
+    })
+    .join('');
+}
+
 // Markdown: no raw HTML, no javascript: links.
 const md = new Marked({ gfm: true });
 md.use({
   renderer: {
-    html: ({ text }) => esc(text),
+    html: ({ text }) => rawHtml(text),
     heading({ tokens, depth, text }) {
+      // the page already has an <h1>; README headings move down one level
+      if (readmeCtx) depth = Math.min(depth + 1, 6);
       const id = text.toLowerCase().replace(/<[^>]+>/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       return `<h${depth} id="${esc(id)}">${this.parser.parseInline(tokens)}</h${depth}>\n`;
     },
     link({ href: h, title, tokens }) {
       const t = title ? ` title="${esc(title)}"` : '';
-      return `<a href="${esc(safeUrl(h))}"${t} rel="nofollow ugc">${this.parser.parseInline(tokens)}</a>`;
+      return `<a href="${esc(safeUrl(fromRepo(h, false)))}"${t} rel="nofollow ugc">${this.parser.parseInline(tokens)}</a>`;
     },
-    image: ({ href: h, title, text }) =>
-      `<img src="${esc(safeUrl(h))}" alt="${esc(text)}"${title ? ` title="${esc(title)}"` : ''} loading="lazy">`,
+    // marked hands over alt text already escaped
+    image: ({ href: h, title, text }) => imgTag(fromRepo(h, true), text.replace(/&(amp|lt|gt|quot|#39);/g, (_, e) => ({ amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" })[e]), title),
   },
 });
+
+/** The repo's README as sanitized HTML, from the enrich cache ('' when not cached). */
+function renderReadme(slug, info) {
+  if (!slug || !info.readmePath || !fs.existsSync(readmeFile(slug))) return '';
+  readmeCtx = { slug, branch: info.defaultBranch || 'HEAD', dir: path.posix.dirname(info.readmePath) };
+  try {
+    return md.parse(fs.readFileSync(readmeFile(slug), 'utf8'));
+  } finally {
+    readmeCtx = null;
+  }
+}
 
 const AI_LABEL = {
   none: ['handmade', 'Written without AI code generation'],
@@ -55,7 +109,8 @@ for (const e of loadEntries()) {
     continue;
   }
   const d = e.data;
-  const gh = cache[githubSlug(d.repo)] || {};
+  const ghSlug = githubSlug(d.repo);
+  const gh = cache[ghSlug] || {};
   records.push({
     platform: e.platform,
     slug: e.slug,
@@ -77,7 +132,8 @@ for (const e of loadEntries()) {
     archived: !!gh.archived,
     added: d.added ? String(d.added).slice(0, 10) : null,
     path: `${ENTRIES_DIR}/${e.slug}/`,
-    body: e.body,
+    body: e.body.replace(/<!--[\s\S]*?(-->|$)/g, ''), // the template's hint is a comment; it must not count as notes
+    readme: renderReadme(ghSlug, gh),
     dir: path.join(ROOT, ENTRIES_DIR, e.slug),
   });
 }
@@ -100,11 +156,13 @@ function layout({ title, description, body, canonical }) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(fullTitle)}</title>
 <meta name="description" content="${esc(description || cfg.description)}">
-${canonical && siteUrl ? `<link rel="canonical" href="${esc(siteUrl + '/' + canonical)}">` : ''}
+${canonical != null && siteUrl ? `<link rel="canonical" href="${esc(siteUrl + '/' + canonical)}">` : ''}
 <meta property="og:title" content="${esc(fullTitle)}">
 <meta property="og:description" content="${esc(description || cfg.description)}">
 <link rel="icon" href="${href('assets/favicon.svg')}" type="image/svg+xml">
 <link rel="stylesheet" href="${href('assets/style.css')}">
+${siteUrl ? `<link rel="alternate" type="application/atom+xml" title="${esc(cfg.title)}: new scripts" href="${href('feed-new.xml')}">
+<link rel="alternate" type="application/atom+xml" title="${esc(cfg.title)}: recently updated" href="${href('feed-updated.xml')}">` : ''}
 <script>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
 <body>
@@ -112,6 +170,8 @@ ${canonical && siteUrl ? `<link rel="canonical" href="${esc(siteUrl + '/' + cano
   <a class="brand" href="${href('')}"><img class="brand-mark" src="${href('assets/favicon.svg')}" alt="" width="28" height="28">${esc(cfg.title)}</a>
   <nav>
     <a href="${href('')}">scripts</a>
+    <a href="${href('new/')}">new</a>
+    <a href="${href('updated/')}">updated</a>
     <a href="${href('about/')}">about &amp; submit</a>
     <a href="https://github.com/${esc(cfg.repo)}">github</a>
     <button class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle theme"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg></button>
@@ -217,6 +277,7 @@ ${records.map(card).join('\n')}
 const giscusReady = cfg.giscus && cfg.giscus.repo && cfg.giscus.repoId && cfg.giscus.categoryId;
 for (const r of records) {
   const ghSlug = githubSlug(r.repo);
+  const editUrl = esc(`https://github.com/${cfg.repo}/edit/${cfg.branch}/${ENTRIES_DIR}/${r.slug}/index.md`);
   const install =
     r.platform === 'norns'
       ? `<section class="install">
@@ -264,13 +325,19 @@ for (const r of records) {
   <div class="entry-grid">
     <div class="entry-main">
       ${install}
-      ${r.body.trim() ? `<section class="notes prose">${md.parse(r.body)}</section>` : ''}
+      ${r.body.trim() ? `<section class="notes"><h2>catalog notes</h2><div class="prose">${md.parse(r.body)}</div></section>` : ''}
+      ${
+        r.readme
+          ? `<section class="readme"><h2>readme <span class="readme-src">from <a href="${esc(r.repo)}">${esc(ghSlug || r.repo)}</a></span></h2><div class="prose">${r.readme}</div></section>`
+          : `<section class="readme"><h2>readme</h2><p class="hint">Documentation lives in <a href="${esc(r.repo)}">the repository</a>.</p></section>`
+      }
       ${discussion}
     </div>
     <aside class="entry-side">
       <dl>${meta.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
       <div class="card-tags">${r.tags.map(tagLink).join('')}</div>
-      <p class="edit"><a href="https://github.com/${esc(cfg.repo)}/edit/${esc(cfg.branch)}/${ENTRIES_DIR}/${esc(r.slug)}/index.md">suggest an edit</a></p>
+      ${r.source === 'imported' ? `<p class="claim">Is this your script? <a href="${editUrl}">Claim it</a>: set <code>source: submitted</code> and fill in the <code>ai</code> disclosure.</p>` : ''}
+      <p class="edit"><a href="${editUrl}">suggest an edit</a></p>
     </aside>
   </div>
 </article>`,
@@ -281,6 +348,82 @@ for (const r of records) {
   for (const f of fs.readdirSync(r.dir)) {
     if (/\.(png|gif|jpe?g|webp)$/i.test(f)) fs.copyFileSync(path.join(r.dir, f), path.join(DIST, r.path, f));
   }
+}
+
+// new & recently updated: static pages plus Atom feeds (for feed readers and fediverse bots)
+const FEED_SIZE = 50;
+const newest = (key) =>
+  records
+    .filter((r) => r[key])
+    .sort((a, b) => b[key].localeCompare(a[key]) || a.name.localeCompare(b.name))
+    .slice(0, FEED_SIZE);
+const lists = [
+  {
+    page: 'new/',
+    feed: 'feed-new.xml',
+    title: 'new scripts',
+    intro: 'The latest scripts added to the catalog.',
+    empty: 'Nothing new yet. Scripts added from now on show up here.',
+    items: newest('added'),
+    date: (r) => r.added,
+    // one entry per script: being added happens once
+    id: (r) => `${siteUrl}/${r.path}`,
+  },
+  {
+    page: 'updated/',
+    feed: 'feed-updated.xml',
+    title: 'recently updated',
+    intro: 'Scripts whose repositories received pushes most recently.',
+    empty: 'No update data yet (it comes from GitHub during the deploy).',
+    items: newest('updated'),
+    date: (r) => r.updated,
+    // a new entry for each update day, so feed readers show repeat updates
+    id: (r) => `${siteUrl}/${r.path}#updated-${r.updated}`,
+  },
+];
+for (const l of lists) {
+  const feedLink = siteUrl ? ` <a href="${href(l.feed)}">Atom feed</a>` : '';
+  write(
+    `${l.page}index.html`,
+    layout({
+      title: l.title,
+      description: l.intro,
+      canonical: l.page,
+      body: `
+<section class="hero">
+  <h1>${esc(l.title)}</h1>
+  <p>${esc(l.intro)}${feedLink}</p>
+</section>
+${l.items.length ? `<ul class="cards">\n${l.items.map(card).join('\n')}\n</ul>` : `<p class="empty">${esc(l.empty)}</p>`}
+`,
+    }),
+  );
+  if (!siteUrl) continue;
+  const entries = l.items.map(
+    (r) => `  <entry>
+    <title>${esc(r.name)}</title>
+    <id>${esc(l.id(r))}</id>
+    <link href="${esc(`${siteUrl}/${r.path}`)}"/>
+    <updated>${esc(l.date(r))}T00:00:00Z</updated>
+    <author><name>${esc(r.author)}</name></author>
+    <summary>${esc(r.description)}</summary>
+${r.tags.map((t) => `    <category term="${esc(t)}"/>`).join('\n')}
+  </entry>`,
+  );
+  write(
+    l.feed,
+    `<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>${esc(`${cfg.title}: ${l.title}`)}</title>
+  <subtitle>${esc(l.intro)}</subtitle>
+  <id>${esc(`${siteUrl}/${l.feed}`)}</id>
+  <link rel="self" href="${esc(`${siteUrl}/${l.feed}`)}"/>
+  <link href="${esc(`${siteUrl}/${l.page}`)}"/>
+  <updated>${l.items.length ? `${esc(l.date(l.items[0]))}T00:00:00Z` : buildDate}</updated>
+${entries.join('\n')}
+</feed>
+`,
+  );
 }
 
 // about
@@ -317,7 +460,7 @@ write('catalog.json', JSON.stringify(catalog, null, 2));
 write(
   'index.json',
   JSON.stringify(
-    { generated: buildDate, count: records.length, entries: records.map(({ body, dir, ...r }) => ({ ...r, url: siteUrl ? `${siteUrl}/${r.path}` : r.path })) },
+    { generated: buildDate, count: records.length, entries: records.map(({ body, readme, dir, ...r }) => ({ ...r, url: siteUrl ? `${siteUrl}/${r.path}` : r.path })) },
     null,
     2,
   ),
@@ -327,7 +470,7 @@ write(
 if (siteUrl) {
   write(
     'sitemap.xml',
-    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${['', 'about/', ...records.map((r) => r.path)].map((p) => `  <url><loc>${esc(`${siteUrl}/${p}`)}</loc></url>`).join('\n')}\n</urlset>\n`,
+    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${['', 'about/', 'new/', 'updated/', ...records.map((r) => r.path)].map((p) => `  <url><loc>${esc(`${siteUrl}/${p}`)}</loc></url>`).join('\n')}\n</urlset>\n`,
   );
 }
 write('.nojekyll', '');

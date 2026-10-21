@@ -5,7 +5,7 @@
 1. Fork this repo.
 2. `npm install && npm run new -- <script-name>` creates `scripts/<script-name>/index.md` from the template (add `--platform iii|crow|teletype` for non-norns scripts). You can also copy `templates/entry.md` by hand.
 3. Fill in the front matter. Names are unique across all platforms. For norns, the folder name and `name` must match the folder the script installs into, usually the repo name.
-4. Write notes below the front matter: how to play it, controls, screenshots (put images next to `index.md`).
+4. That's it: the script page shows your repo's README, so the front matter is all a PR needs. Optionally, add short "catalog notes" below the front matter (shown above the README), e.g. "needs crow v4" or "best with a 128 grid".
 5. `npm run validate`, then open a pull request.
 
 ## The one rule: you own what you post

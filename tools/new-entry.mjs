@@ -25,7 +25,8 @@ if (fs.existsSync(dir)) {
 const tpl = fs
   .readFileSync(path.join(ROOT, 'templates', 'entry.md'), 'utf8')
   .replaceAll('my-script', name)
-  .replace(/^platform: .*$/m, `platform: ${platform}`);
+  .replace(/^platform: .*$/m, `platform: ${platform}`)
+  .replace(/^added: .*$/m, `added: ${new Date().toISOString().slice(0, 10)}`);
 fs.mkdirSync(dir, { recursive: true });
 fs.writeFileSync(path.join(dir, 'index.md'), tpl);
 console.log(`✓ created ${rel}/index.md — fill in the front matter, then run: npm run validate`);
