@@ -1,5 +1,5 @@
 ---
-name: duatone
+name: Duatone
 platform: norns
 repo: https://github.com/roiyaru-bokujin/Duatone
 author: roiyaru

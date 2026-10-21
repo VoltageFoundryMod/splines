@@ -1,5 +1,5 @@
 ---
-name: ygg
+name: Ygg
 platform: norns
 repo: https://github.com/spgarbet/Ygg
 author: Shawn Garbett

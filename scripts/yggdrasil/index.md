@@ -2,7 +2,7 @@
 name: yggdrasil
 platform: norns
 repo: https://github.com/northern-information/yggdrasil
-author: argotechnica infinitedigits license tyleretters
+author: argotechnica, infinitedigits, tyleretters
 description: a norns cyberdeck tracker
 tags:
   - sequencer

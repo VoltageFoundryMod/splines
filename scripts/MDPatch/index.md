@@ -1,5 +1,5 @@
 ---
-name: mdpatch
+name: MDPatch
 platform: norns
 repo: https://github.com/hanjo-synth/MDPatch
 author: Hanjo

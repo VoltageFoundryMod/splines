@@ -1,5 +1,5 @@
 ---
-name: shieldxl_battery
+name: shieldXl_battery
 platform: norns
 repo: https://github.com/JGuzak/shieldXl_battery
 author: JGuzak

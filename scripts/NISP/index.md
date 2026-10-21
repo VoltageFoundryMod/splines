@@ -1,5 +1,5 @@
 ---
-name: nisp
+name: NISP
 platform: norns
 repo: https://github.com/itsyourbedtime/NISP
 author: its_your_bedtime

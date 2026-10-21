@@ -1,5 +1,5 @@
 ---
-name: quence
+name: QUENCE
 platform: norns
 repo: https://github.com/millxing/QUENCE
 author: RobSchoen

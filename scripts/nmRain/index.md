@@ -1,5 +1,5 @@
 ---
-name: nmrain
+name: nmRain
 platform: norns
 repo: https://github.com/TuesdayNightMachines/nmRain
 author: NightMachines

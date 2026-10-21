@@ -1,5 +1,5 @@
 ---
-name: nmmelodymagic
+name: nmMelodyMagic
 platform: norns
 repo: https://github.com/TuesdayNightMachines/nmMelodyMagic
 author: NightMachines

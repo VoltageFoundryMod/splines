@@ -1,5 +1,5 @@
 ---
-name: mft-norns-demo
+name: MFT-norns-demo
 platform: norns
 repo: https://github.com/millxing/MFT-norns-demo
 author: millxing

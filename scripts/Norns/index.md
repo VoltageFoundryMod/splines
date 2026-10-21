@@ -1,5 +1,5 @@
 ---
-name: norns
+name: Norns
 platform: norns
 repo: https://github.com/BTS-CM/Norns
 author: BTS-CM

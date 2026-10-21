@@ -1,5 +1,5 @@
 ---
-name: hiswing
+name: Hiswing
 platform: norns
 repo: https://github.com/hanjo-synth/Hiswing
 author: Hanjo

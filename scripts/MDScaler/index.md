@@ -1,5 +1,5 @@
 ---
-name: mdscaler
+name: MDScaler
 platform: norns
 repo: https://github.com/hanjo-synth/MDScaler
 author: Hanjo

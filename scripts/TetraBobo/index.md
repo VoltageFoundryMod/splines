@@ -1,5 +1,5 @@
 ---
-name: tetrabobo
+name: TetraBobo
 platform: norns
 repo: https://github.com/williamthazard/TetraBobo
 author: WilliamHazard

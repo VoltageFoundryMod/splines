@@ -1,5 +1,5 @@
 ---
-name: superbrain
+name: SuperBrain
 platform: norns
 repo: https://github.com/BeatRossmy/SuperBrain
 author: beat

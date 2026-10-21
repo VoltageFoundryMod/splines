@@ -1,5 +1,5 @@
 ---
-name: xd1
+name: xD1
 platform: norns
 repo: https://github.com/ryleelyman/xD1
 author: alanza

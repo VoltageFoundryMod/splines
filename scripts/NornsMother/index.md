@@ -1,5 +1,5 @@
 ---
-name: nornsmother
+name: NornsMother
 platform: norns
 repo: https://github.com/oxbown/NornsMother
 author: oxbown

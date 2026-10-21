@@ -1,5 +1,5 @@
 ---
-name: 4ccfader
+name: 4CCFader
 platform: norns
 repo: https://github.com/hanjo-synth/4CCFader
 author: Hanjo

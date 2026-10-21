@@ -1,5 +1,5 @@
 ---
-name: tetrabotis
+name: Tetrabotis
 platform: norns
 repo: https://github.com/williamthazard/Tetrabotis
 author: WilliamHazard

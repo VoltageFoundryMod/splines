@@ -1,5 +1,5 @@
 ---
-name: koiboi2
+name: KoiBoi2
 platform: norns
 repo: https://github.com/Dillbo/KoiBoi2
 author: dillbo

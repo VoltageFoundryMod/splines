@@ -1,5 +1,5 @@
 ---
-name: narf
+name: NARF
 platform: norns
 repo: https://github.com/rync/NARF
 author: rync

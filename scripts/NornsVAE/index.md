@@ -1,5 +1,5 @@
 ---
-name: nornsvae
+name: NornsVAE
 platform: norns
 repo: https://github.com/jacbz/NornsVAE
 author: jacbz

@@ -1,5 +1,5 @@
 ---
-name: fourtunes
+name: Fourtunes
 platform: norns
 repo: https://github.com/silent5/Fourtunes
 author: silent5

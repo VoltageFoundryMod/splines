@@ -1,5 +1,5 @@
 ---
-name: nb_smpkit
+name: nb_smpKit
 platform: norns
 repo: https://github.com/sonocircuit/nb_smpKit
 author: sonoCircuit

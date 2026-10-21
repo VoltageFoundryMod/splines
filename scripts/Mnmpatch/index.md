@@ -1,5 +1,5 @@
 ---
-name: mnmpatch
+name: Mnmpatch
 platform: norns
 repo: https://github.com/hanjo-synth/Mnmpatch
 author: Hanjo

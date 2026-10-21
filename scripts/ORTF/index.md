@@ -1,5 +1,5 @@
 ---
-name: ortf
+name: ORTF
 platform: norns
 repo: https://github.com/felart/ORTF
 author: felart

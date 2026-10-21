@@ -1,8 +1,8 @@
 ---
-name: smash
+name: SMASH
 platform: norns
 repo: https://github.com/ryanlaws/SMASH
-author: license
+author: ryanlaws
 description: sequencer for apes
 tags:
   - sequencer

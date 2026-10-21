@@ -1,5 +1,5 @@
 ---
-name: nmquadrodubber
+name: nmQuadroDubber
 platform: norns
 repo: https://github.com/TuesdayNightMachines/nmQuadroDubber
 author: NightMachines

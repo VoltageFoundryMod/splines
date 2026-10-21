@@ -1,5 +1,5 @@
 ---
-name: nmsmartypants
+name: nmSmartyPants
 platform: norns
 repo: https://github.com/TuesdayNightMachines/nmSmartyPants
 author: NightMachines

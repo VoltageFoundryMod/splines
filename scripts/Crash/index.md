@@ -1,5 +1,5 @@
 ---
-name: crash
+name: Crash
 platform: norns
 repo: https://github.com/tomwaters/Crash
 author: tomwaters

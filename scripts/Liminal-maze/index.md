@@ -1,5 +1,5 @@
 ---
-name: liminal-maze
+name: Liminal-maze
 platform: norns
 repo: https://github.com/AUDIOWANDERER/Liminal-maze
 author: AUDIOWANDERER

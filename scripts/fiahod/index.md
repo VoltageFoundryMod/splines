@@ -2,7 +2,7 @@
 name: fiahod
 platform: norns
 repo: https://github.com/northern-information/fiahod
-author: tyleretters license
+author: tyleretters
 description: i will show you fear in a handful of dust
 tags:
   - art

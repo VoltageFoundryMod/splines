@@ -1,5 +1,5 @@
 ---
-name: vinker
+name: Vinker
 platform: norns
 repo: https://github.com/KodeBeer/Vinker
 author: Ko de Beer
