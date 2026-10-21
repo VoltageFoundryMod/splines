@@ -1,5 +1,5 @@
 ---
-name: fx_pEte
+name: fx_pete
 platform: norns
 repo: https://github.com/sonocircuit/fx_pete
 author: sonoCircuit
@@ -9,8 +9,7 @@ tags:
   - fx
   - audio-fx
   - delay
-ai: unknown
-origin: curated
+ai: none
 added: 2026-10-21
 license: GPL-3.0
 ---
