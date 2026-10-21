@@ -1,8 +1,8 @@
-# splines — norns & grid script catalog
+# splines — monome script catalog
 
-A community catalog of scripts for monome norns and grid, published as a static site on GitHub Pages. Handmade and AI-assisted scripts are both welcome, and every entry discloses which it is.
+A community catalog of scripts for monome norns, grid, iii, crow and teletype, published as a static site on GitHub Pages. Handmade and AI-assisted scripts are both welcome, and every entry discloses which it is.
 
-- **One folder per script**: `norns/<name>/index.md` with YAML front matter and free-form notes.
+- **One folder per script**: `scripts/<name>/index.md` with YAML front matter and free-form notes. A `platform` field says where it runs.
 - **Submissions by pull request**: CI validates the entry and checks the repo.
 - **Search and filters run in the browser**: text, tags, hardware, AI disclosure and sort, with shareable URLs (`?tag=grid&req=crow`).
 - **Maiden-compatible catalog**: `catalog.json` uses the same shape as monome's `community.json`.
@@ -19,19 +19,18 @@ npm run import -- --only community --limit 24   # seed some entries (optional)
 npm run validate        # check all entries
 npm run build           # → dist/
 npm run serve           # → http://localhost:8080/norns-catalog/
-npm run new -- my-script   # scaffold norns/my-script/index.md
+npm run new -- my-script   # scaffold scripts/my-script/index.md (--platform iii|crow|teletype)
 ```
 
 ## Layout
 
 ```
-norns/<name>/index.md     one entry per norns script (+ optional screenshots)
-iii/<name>/index.md       iii grid scripts (not in the maiden catalog)
+scripts/<name>/index.md   one entry per script, any platform (+ optional screenshots)
 templates/entry.md        entry template
 src/assets/               style.css, app.js (filtering), favicon
 src/about.md              about / submit / maiden page
-scripts/
-  lib.mjs                 config, entry loading, validation rules
+tools/
+  lib.mjs                 config, platforms, entry loading, validation rules
   validate.mjs            schema + duplicates; --online checks repos exist and have a root .lua
   enrich.mjs              stars / last push / license / cover → .cache/github.json
   import.mjs              pull new entries from external sources
@@ -44,7 +43,8 @@ site.config.json          title, URLs, giscus, import sources
 
 ```yaml
 ---
-name: my-script            # = folder name = install folder on norns
+name: my-script            # = folder name (= install folder on norns), unique catalog-wide
+platform: norns            # norns | iii | crow | teletype (default norns; only norns goes into catalog.json)
 repo: https://github.com/you/my-script
 author: you
 description: one line, ≤160 chars
@@ -78,6 +78,6 @@ Threads are created on first comment and mapped to each page's path.
 ## TODO / to verify
 
 - [ ] **Maiden catalog source config**: confirm where maiden reads extra catalog URLs on the device (its config file) and document the exact steps in `src/about.md`.
-- [ ] **awesome lists**: add the raw README URL(s) to `import.awesomeLists`.
+- [x] **awesome lists**: p3r7/awesome-monome-norns is imported (frozen since 2021, so it rarely adds anything new).
 - [ ] Pick the final name and domain, then update `title`, `catalogName`, `siteUrl`, `basePath` and `cname`.
-- [ ] Decide whether imported entries for mods and libraries should get their own `kind` (or a `type:` field).
+- [ ] Decide whether imported entries for mods and libraries should get their own `platform` value (or a `type:` field).

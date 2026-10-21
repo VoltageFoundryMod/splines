@@ -1,0 +1,16 @@
+---
+name: n16o
+platform: norns
+repo: https://github.com/jlmitch5/n16o
+author: jlmitch5
+description: i2c-based ER-301 control via KORG nanoKONTROL2
+tags:
+  - utility
+ai: unknown
+source: imported
+origin: catalog:community
+added: 2026-10-21
+discussion: https://llllllll.co/t/n16o/28198
+---
+
+_Imported automatically from `catalog:community`. Are you the author? Claim this entry with a pull request: set `source: submitted`, fill in the `ai` disclosure, and add notes or screenshots here._

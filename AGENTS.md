@@ -4,7 +4,7 @@ Guidance for AI coding agents (Claude Code, Copilot, etc.) working on this repo.
 
 ## What this is
 
-A community catalog of monome norns / grid / iii scripts, published as a **static site on GitHub Pages**. People add scripts with pull requests: one Markdown file per script with YAML front matter. The build produces:
+A community catalog of monome scripts (norns, iii, crow, teletype; grid and arc as hardware), published as a **static site on GitHub Pages**. People add scripts with pull requests: one Markdown file per script with YAML front matter. The build produces:
 
 - the website (prerendered HTML, client-side search and filters),
 - `catalog.json`, a **maiden-compatible** script catalog (same shape as monome's `community.json`),
@@ -25,7 +25,7 @@ npm run import -- --only community --limit 24   # seed/import entries; --dry-run
 npm run build               # → dist/
 npm run serve               # → http://localhost:8080/<basePath>/
 npm run dev                 # build + serve
-npm run new -- <name> [--kind iii]   # scaffold an entry from templates/entry.md
+npm run new -- <name> [--platform crow]   # scaffold an entry from templates/entry.md
 ```
 
 Node ≥ 20. There is no test suite yet. Verify changes by running `validate` and `build`, then opening the site with `serve`. For a realistic dataset, run the importer without `--limit` in a scratch copy (≈350 entries from norns.community; all should validate).
@@ -33,17 +33,17 @@ Node ≥ 20. There is no test suite yet. Verify changes by running `validate` an
 ## Layout
 
 ```
-norns/<name>/index.md     one entry per norns script (+ optional images next to it)
-iii/<name>/index.md       iii grid scripts (shown on site, NOT in catalog.json)
+scripts/<name>/index.md   one entry per script, ANY platform (+ optional images next to it). This is catalog data, not code.
 templates/entry.md        entry template used by `npm run new`
 src/assets/               style.css, app.js (client filtering), favicon.svg
 src/about.md              about/submit/maiden page ({{title}}, {{catalog}}, {{repo}} placeholders)
-scripts/lib.mjs           config, entry loading, front matter, VALIDATION RULES (single source of truth)
-scripts/validate.mjs      CLI validator (GitHub Actions annotations when GITHUB_ACTIONS is set)
-scripts/enrich.mjs        GitHub API metadata cache (20h TTL)
-scripts/import.mjs        importers: maiden catalogs, awesome-style markdown lists, GitHub topics
-scripts/build.mjs         renders everything into dist/
-scripts/serve.mjs         local static server honoring basePath
+tools/lib.mjs             config, PLATFORMS, entry loading, front matter, VALIDATION RULES (single source of truth)
+tools/validate.mjs        CLI validator (GitHub Actions annotations when GITHUB_ACTIONS is set)
+tools/enrich.mjs          GitHub API metadata cache (20h TTL)
+tools/import.mjs          importers: maiden catalogs, awesome lists (incl. p3r7/awesome-monome-norns tables), GitHub topics
+tools/build.mjs           renders everything into dist/
+tools/serve.mjs           local static server honoring basePath
+tools/new-entry.mjs       scaffolder behind `npm run new`
 site.config.json          title, siteUrl, basePath, cname, repo, giscus, import sources
 .github/workflows/        validate.yml (PRs), deploy.yml (push/daily → Pages), import.yml (weekly → PR)
 ```
@@ -52,8 +52,9 @@ site.config.json          title, siteUrl, basePath, cname, repo, giscus, import 
 
 | field | req | notes |
 |---|---|---|
-| `name` | ✓ | must equal the folder name; it's the folder the script installs into on norns (`dust/code/<name>`), so it must be unique among norns entries |
-| `repo` | ✓ | https URL; norns repos need the main `.lua` at the root |
+| `name` | ✓ | must equal the folder name, unique across the whole catalog; for norns it's the folder the script installs into (`dust/code/<name>`) |
+| `platform` | | where the code runs, from `PLATFORMS` in `lib.mjs`: `norns` (default) \| `iii` \| `crow` \| `teletype`. Grid/arc are hardware (`requires`), not platforms |
+| `repo` | ✓ | https URL; norns repos need the main `.lua` at the root (`luaRoot` in `PLATFORMS`) |
 | `author` | ✓ | display name / handle |
 | `description` | ✓ | one line, ≤160 chars |
 | `tags` | ✓ | lowercase kebab-case list |
@@ -65,7 +66,7 @@ site.config.json          title, siteUrl, basePath, cname, repo, giscus, import 
 
 The entry body (Markdown) is rendered on the script page.
 
-The URL slug is the folder name: `/<kind>/<name>/`. Duplicate names and duplicate repos (per kind) are already rejected by `validate.mjs`.
+The URL slug is the folder name: `/scripts/<name>/`, stable even if the platform changes. Duplicate names and duplicate repos (per platform) are rejected by `validate.mjs`. Adding a platform is one line in `PLATFORMS`.
 
 When adding a field: update `validateEntry` in `lib.mjs`, `templates/entry.md`, the table in `README.md`/`src/about.md`, the record built in `build.mjs`, and, if relevant, `index.json`/`catalog.json`.
 
@@ -74,7 +75,7 @@ When adding a field: update `validateEntry` in `lib.mjs`, `templates/entry.md`, 
 - **No framework, no client-side dependencies.** Plain Node ESM build, vanilla JS in the browser. Keep runtime deps minimal (currently `yaml`, `marked`). Discuss before adding any.
 - **Cards are prerendered.** `app.js` only filters and sorts existing DOM nodes using `data-*` attributes on each `.card`. If you add a filter, add the `data-*` attribute in `card()` in `build.mjs` and the group in `app.js` (`PARAM` = URL param name, `MODE` = `any`/`all`). Filter state lives in the URL query (shareable links).
 - **Everything user-supplied is untrusted.** Escape with `esc()` in templates. Markdown goes through the custom `marked` renderer that escapes raw HTML and neutralizes non-http(s) links. Never use `innerHTML` with entry data in `app.js`.
-- **`catalog.json` shape is a contract with maiden.** Keep `file_info`, `catalog_name`, `date`, `entries[]` with `project_name`, `project_url`, `author`, `description`, `discussion_url?`, `documentation_url?`, `tags`. Only `KINDS[kind].maiden === true` entries go in it.
+- **`catalog.json` shape is a contract with maiden.** Keep `file_info`, `catalog_name`, `date`, `entries[]` with `project_name`, `project_url`, `author`, `description`, `discussion_url?`, `documentation_url?`, `tags`. Only `PLATFORMS[platform].maiden === true` entries (norns) go in it.
 - **Paths:** always build site URLs with `href()` (prefixes `basePath`). `basePath` is `/norns-catalog` for a project Pages site, `""` with a custom domain.
 - **Importer never overwrites** existing entries and dedupes by normalized repo URL. Imported entries are reviewed via the PR that `import.yml` opens.
 - **The build must work offline.** GitHub metadata comes only from `.cache/github.json` (written by `enrich.mjs`). Missing cache just means fewer stats on cards.
@@ -85,7 +86,7 @@ When adding a field: update `validateEntry` in `lib.mjs`, `templates/entry.md`, 
 ## Known gaps / TODO
 
 - Confirm how maiden is configured with an extra catalog URL on the device, then document the exact steps in `src/about.md` (the `## installing with maiden` section).
-- `import.awesomeLists` is empty: add the raw README URL of the awesome-monome-norns list once confirmed.
+- Some imported "norns" entries are really crow scripts, Max patches, editor plugins or libraries (e.g. `crow-scripts`, `trio_for_crow`, `m4l-monome-norns`, `norns.el`). Re-platform or remove them during curation.
 - Final name/domain: update `title`, `catalogName`, `siteUrl`, `basePath`, `cname`.
 - giscus is wired but inactive until `site.config.json → giscus` is filled in.
 
@@ -94,7 +95,7 @@ When adding a field: update `validateEntry` in `lib.mjs`, `templates/entry.md`, 
 Proposals for the open ideas. Check with the maintainer before implementing any of these.
 
 1. **Needs vs. "better with"**: split hardware into `requires` (won't work without) and `supports` (optional, "better with grid"). The hardware filter matches either; badges are styled differently.
-2. **Platforms**: `kind` = where the code runs: `norns`, `iii`, `crow` (druid scripts). Grid/arc are controllers, so they stay in `requires`/`supports`, not in kinds. Only `norns` goes into the maiden catalog.
+2. ~~**Platforms**~~: done, see `platform` above.
 3. **Screenshots from norns**: document capturing the screen from maiden's REPL (`_norns.screen_export_png("/home/we/dust/<name>.png")`, verify the API on current norns), then copying it via SMB/SFTP. The 128×64 image renders crisp thanks to `image-rendering: pixelated`.
 4. **Upstream README**: fetch each repo's README during `enrich.mjs` (cached), render it sanitized on the script page, and rewrite relative links/images to the repo's blob/raw URLs. The entry body becomes optional "catalog notes" shown above or instead of the README.
 5. **Minimal PRs**: only front matter is required; the README is the documentation. This avoids duplicated, stale text in this repo.

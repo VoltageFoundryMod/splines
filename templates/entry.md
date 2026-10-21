@@ -1,7 +1,9 @@
 ---
-# Must match this folder's name and the folder the script installs into on norns (usually the repo name).
+# Must match this folder's name. For norns it's also the folder the script installs into (usually the repo name).
 name: my-script
-# Public repository with the main .lua script at its root.
+# Where the code runs: norns | iii | crow | teletype
+platform: norns
+# Public repository (or other https link). For norns, the main .lua script must be at its root.
 repo: https://github.com/you/my-script
 author: you
 # One line, 160 characters max.

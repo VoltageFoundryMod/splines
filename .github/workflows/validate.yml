@@ -2,7 +2,7 @@ name: validate entries
 
 on:
   pull_request:
-    paths: ['norns/**', 'iii/**', 'scripts/**', 'site.config.json', 'src/**']
+    paths: ['scripts/**', 'tools/**', 'templates/**', 'site.config.json', 'src/**']
 
 permissions:
   contents: read
@@ -22,16 +22,16 @@ jobs:
       - name: Find changed entries
         id: changed
         run: |
-          files=$(git diff --name-only --diff-filter=AM "origin/${{ github.base_ref }}...HEAD" -- 'norns/*/index.md' 'iii/*/index.md' | paste -sd, -)
+          files=$(git diff --name-only --diff-filter=AM "origin/${{ github.base_ref }}...HEAD" -- 'scripts/*/index.md' | paste -sd, -)
           echo "files=$files" >> "$GITHUB_OUTPUT"
       - name: Validate (schema, duplicates, repo checks for changed entries)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ -n "${{ steps.changed.outputs.files }}" ]; then
-            node scripts/validate.mjs --online --changed "${{ steps.changed.outputs.files }}"
+            node tools/validate.mjs --online --changed "${{ steps.changed.outputs.files }}"
           else
-            node scripts/validate.mjs
+            node tools/validate.mjs
           fi
       - name: Build check
         run: npm run build

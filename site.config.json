@@ -1,7 +1,7 @@
 {
   "title": "splines",
-  "tagline": "a community catalog of norns & grid scripts",
-  "description": "Discover, search and install scripts for monome norns and grid. Handmade or AI-assisted, always disclosed.",
+  "tagline": "a community catalog of monome scripts",
+  "description": "Discover, search and install scripts for monome norns, grid, iii, crow and teletype. Handmade or AI-assisted, always disclosed.",
   "siteUrl": "https://carlosedp.github.io/norns-catalog",
   "basePath": "/norns-catalog",
   "cname": "",

@@ -1,6 +1,6 @@
 # about {{title}}
 
-{{title}} is a community catalog of scripts for monome norns and grid. Anyone can list a script with a pull request. Handmade and AI-assisted work are both welcome, as long as the entry discloses it. The maintainer of the catalog lightly curates the submissions to ensure quality and relevance.
+{{title}} is a community catalog of scripts for monome norns, grid, iii, crow and teletype. Anyone can list a script with a pull request. Handmade and AI-assisted work are both welcome, as long as the entry discloses it. The maintainer of the catalog lightly curates the submissions to ensure quality and relevance.
 
 It's unofficial and community-run, and has no affiliation with monome. Scripts live in their authors' repositories and keep their own licenses; {{title}} only links to them.
 
@@ -8,7 +8,7 @@ It's unofficial and community-run, and has no affiliation with monome. Scripts l
 
 However a script was made, the person who submits it stands behind it:
 
-- it runs on a real norns (or grid) and does what the entry says,
+- it runs on real hardware and does what the entry says,
 - you understand it well enough to answer questions and fix bugs,
 - you'll keep the entry honest if that changes (archive it, update it, or remove it).
 
@@ -26,12 +26,13 @@ Every entry carries one of these labels, and the list can be filtered by them, s
 ## submitting a script
 
 1. Fork [{{repo}}](https://github.com/{{repo}}).
-2. Create `norns/<your-script>/index.md`. The folder name must match the name the script installs as, usually the repo name.
+2. Create `scripts/<your-script>/index.md`. Names are unique across the whole catalog. For norns, the folder name must match the name the script installs as, usually the repo name.
 3. Fill in the front matter (copy `templates/entry.md`):
 
 ```yaml
 ---
 name: my-script
+platform: norns          # norns | iii | crow | teletype
 repo: https://github.com/you/my-script
 author: you
 description: one line, under 160 characters
@@ -46,7 +47,7 @@ Anything below the front matter shows up on the script's page:
 how to use it, controls, screenshots (put images next to index.md).
 ```
 
-1. Open a pull request. A check validates the entry and confirms the repo has a `.lua` script at its root. Once merged, the site rebuilds in a minute or two.
+1. Open a pull request. A check validates the entry and confirms the repo exists (for norns, that it has a `.lua` script at its root). Once merged, the site rebuilds in a minute or two.
 
 Already listed through an import? Claim it: edit the entry, set `source: submitted`, and fill in `ai`.
 

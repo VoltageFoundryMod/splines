@@ -41,9 +41,9 @@
   const emptyEl = document.getElementById('empty');
   const clearBtn = document.getElementById('clear');
   const groups = {}; // group name -> Set of selected values
-  const PARAM = { kind: 'kind', ai: 'ai', requires: 'req', tags: 'tag' };
+  const PARAM = { platform: 'platform', ai: 'ai', requires: 'req', tags: 'tag' };
   // how values inside one group combine: "any" = OR, "all" = AND
-  const MODE = { kind: 'any', ai: 'any', requires: 'all', tags: 'all' };
+  const MODE = { platform: 'any', ai: 'any', requires: 'all', tags: 'all' };
 
   document.querySelectorAll('fieldset.chips[data-group]').forEach((fs) => {
     const g = fs.dataset.group;
@@ -68,7 +68,7 @@
   if (groups.tags && groups.tags.size) document.querySelector('.tag-panel')?.setAttribute('open', '');
 
   const dataSet = (card, key) => (card.dataset[key] ? card.dataset[key].split(' ') : []);
-  const field = { kind: 'kind', ai: 'ai', requires: 'requires', tags: 'tags' };
+  const field = { platform: 'platform', ai: 'ai', requires: 'requires', tags: 'tags' };
 
   function matches(card, terms) {
     for (const [g, sel] of Object.entries(groups)) {

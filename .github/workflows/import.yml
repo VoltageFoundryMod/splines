@@ -26,14 +26,14 @@ jobs:
       - name: Import
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/import.mjs --only "${{ inputs.only || 'community,awesome,github' }}" | tee import.log
+        run: node tools/import.mjs --only "${{ inputs.only || 'community,awesome,github' }}" | tee import.log
       - run: npm run validate
       - name: Open pull request
         uses: peter-evans/create-pull-request@v7
         with:
           branch: import/automated
           delete-branch: true
-          add-paths: norns/**
+          add-paths: scripts/**
           commit-message: 'import: new scripts from external sources'
           title: 'import: new scripts from external sources'
           labels: import

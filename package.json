@@ -5,14 +5,14 @@
   "description": "A community catalog of norns & grid scripts, built as a static site with a maiden-compatible catalog.",
   "type": "module",
   "scripts": {
-    "validate": "node scripts/validate.mjs",
-    "validate:online": "node scripts/validate.mjs --online",
-    "enrich": "node scripts/enrich.mjs",
-    "import": "node scripts/import.mjs",
-    "build": "node scripts/build.mjs",
-    "serve": "node scripts/serve.mjs",
+    "validate": "node tools/validate.mjs",
+    "validate:online": "node tools/validate.mjs --online",
+    "enrich": "node tools/enrich.mjs",
+    "import": "node tools/import.mjs",
+    "build": "node tools/build.mjs",
+    "serve": "node tools/serve.mjs",
     "dev": "npm run build && npm run serve",
-    "new": "node scripts/new-entry.mjs"
+    "new": "node tools/new-entry.mjs"
   },
   "engines": {
     "node": ">=20"
