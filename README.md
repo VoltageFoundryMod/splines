@@ -43,7 +43,7 @@ site.config.json          title, URLs, giscus, import sources
 
 ```yaml
 ---
-name: my-script            # = folder name (= install folder on norns), unique catalog-wide
+name: my-script            # = folder name = repo name, exact case (install folder on norns); unique ignoring case
 platform: norns            # norns | iii | crow | teletype (default norns; only norns goes into catalog.json)
 repo: https://github.com/you/my-script
 author: you

@@ -23,7 +23,8 @@ export const DEFAULT_PLATFORM = 'norns';
 export const AI_VALUES = ['none', 'assisted', 'generated', 'unknown'];
 export const SOURCE_VALUES = ['submitted', 'imported'];
 export const KNOWN_REQUIRES = ['grid', 'arc', 'crow', 'midi', 'audio-in', 'keyboard', 'jf', 'ansible', 'teletype', 'hid', 'osc', 'txo', 'er-301'];
-export const SLUG_RE = /^[a-z0-9_][a-z0-9_.-]*$/;
+// Case is kept (the norns install folder is case-sensitive); uniqueness is checked ignoring case.
+export const SLUG_RE = /^[A-Za-z0-9_][A-Za-z0-9_.-]*$/;
 export const TAG_RE = /^[a-z0-9][a-z0-9-]*$/;
 
 export function loadConfig() {
@@ -79,7 +80,7 @@ export function validateEntry(entry) {
   const errs = [];
   const d = entry.data;
   if (!d) return ['missing or malformed front matter (expected a --- YAML block at the top)'];
-  if (!SLUG_RE.test(entry.slug)) errs.push(`folder name "${entry.slug}" must be lowercase letters, digits, "_", "-" or "."`);
+  if (!SLUG_RE.test(entry.slug)) errs.push(`folder name "${entry.slug}" may only use letters, digits, "_", "-" or "."`);
 
   const reqStr = (k) => {
     if (typeof d[k] !== 'string' || !d[k].trim()) errs.push(`"${k}" is required and must be a non-empty string`);

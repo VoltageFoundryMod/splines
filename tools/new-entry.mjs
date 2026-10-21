@@ -9,7 +9,7 @@ const platform = args.includes('--platform') ? args[args.indexOf('--platform') +
 const platforms = Object.keys(PLATFORMS).join('|');
 
 if (!name || !SLUG_RE.test(name)) {
-  console.error(`usage: npm run new -- <name> [--platform ${platforms}]   (lowercase, digits, "_", "-", ".")`);
+  console.error(`usage: npm run new -- <name> [--platform ${platforms}]   (letters, digits, "_", "-", "."; use the exact repo name)`);
   process.exit(1);
 }
 if (!PLATFORMS[platform]) {
@@ -18,7 +18,8 @@ if (!PLATFORMS[platform]) {
 }
 const rel = `${ENTRIES_DIR}/${name}`;
 const dir = path.join(ROOT, rel);
-if (fs.existsSync(dir)) {
+const taken = fs.existsSync(path.join(ROOT, ENTRIES_DIR)) && fs.readdirSync(path.join(ROOT, ENTRIES_DIR)).some((d) => d.toLowerCase() === name.toLowerCase());
+if (taken) {
   console.error(`${rel} already exists; names are shared by all platforms, so pick another one`);
   process.exit(1);
 }

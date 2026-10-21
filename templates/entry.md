@@ -1,5 +1,5 @@
 ---
-# Must match this folder's name. For norns it's also the folder the script installs into (usually the repo name).
+# Must match this folder's name: the repo name, with the same upper/lowercase. For norns it's the folder the script installs into.
 name: my-script
 # Where the code runs: norns | iii | crow | teletype
 platform: norns

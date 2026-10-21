@@ -52,7 +52,7 @@ site.config.json          title, siteUrl, basePath, cname, repo, giscus, import 
 
 | field | req | notes |
 |---|---|---|
-| `name` | ✓ | must equal the folder name, unique across the whole catalog; for norns it's the folder the script installs into (`dust/code/<name>`) |
+| `name` | ✓ | must equal the folder name; use the repo name with its **exact case** (for norns it's the install folder `dust/code/<name>`, and Linux paths are case-sensitive). Unique across the catalog ignoring case |
 | `platform` | | where the code runs, from `PLATFORMS` in `lib.mjs`: `norns` (default) \| `iii` \| `crow` \| `teletype`. Grid/arc are hardware (`requires`), not platforms |
 | `repo` | ✓ | https URL; norns repos need the main `.lua` at the root (`luaRoot` in `PLATFORMS`) |
 | `author` | ✓ | display name / handle |

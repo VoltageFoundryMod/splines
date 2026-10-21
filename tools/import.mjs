@@ -19,12 +19,14 @@ const cfg = loadConfig().import || {};
 // every source here lists norns scripts; names are unique across all platforms
 const existing = loadEntries();
 const knownRepos = new Set(existing.filter((e) => e.platform === 'norns').map((e) => normalizeRepo(e.data?.repo)));
-const usedSlugs = new Set(existing.map((e) => e.slug));
+const usedSlugs = new Set(existing.map((e) => e.slug.toLowerCase())); // names are unique ignoring case
 const today = new Date().toISOString().slice(0, 10);
 const added = [];
 
 const slugify = (s) =>
   String(s).toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^[-.]+|[-.]+$/g, '') || 'script';
+// entry names keep their case: on norns the name is the install folder, and paths are case-sensitive
+const toName = (s) => String(s).replace(/[^A-Za-z0-9_.-]+/g, '-').replace(/^[-.]+|[-.]+$/g, '') || 'script';
 const cleanTags = (tags) => {
   const out = [...new Set((tags || []).map((t) => slugify(t).replace(/[_.]/g, '-')).filter((t) => TAG_RE.test(t) && !['norns', 'monome', 'monome-norns', 'norns-script', 'lua'].includes(t)))];
   return out.length ? out.slice(0, 8) : ['uncategorized'];
@@ -39,13 +41,13 @@ function add({ name, repo, author, description, tags, requires, discussion, docs
   const norm = normalizeRepo(repo);
   if (!norm.startsWith('https://') || knownRepos.has(norm)) return;
   const owner = norm.split('/')[3] || 'unknown';
-  let slug = slugify(name);
-  if (usedSlugs.has(slug) && onNameClash === 'skip') {
+  let slug = toName(name);
+  if (usedSlugs.has(slug.toLowerCase()) && onNameClash === 'skip') {
     console.log(`  ? skipped ${repo}: name "${slug}" is already taken (same script at a new URL?)`);
     return;
   }
-  if (usedSlugs.has(slug)) slug = slugify(`${slug}-${owner}`);
-  if (usedSlugs.has(slug)) return;
+  if (usedSlugs.has(slug.toLowerCase())) slug = toName(`${slug}-${owner}`);
+  if (usedSlugs.has(slug.toLowerCase())) return;
 
   const data = {
     name: slug,
@@ -63,7 +65,7 @@ function add({ name, repo, author, description, tags, requires, discussion, docs
   if (docs?.startsWith('https://')) data.docs = docs;
 
   knownRepos.add(norm);
-  usedSlugs.add(slug);
+  usedSlugs.add(slug.toLowerCase());
   added.push(data);
 }
 
@@ -82,7 +84,8 @@ if (want('community')) {
         add({
           name: e.project_name,
           repo: e.project_url,
-          author: e.author,
+          // community.json sometimes has a stray "license" word in author ("tyleretters license")
+          author: String(e.author || '').replace(/\blicense\b/gi, '').replace(/\s+/g, ' ').trim(),
           description: e.description,
           tags: e.tags || e.tag,
           discussion: e.discussion_url,

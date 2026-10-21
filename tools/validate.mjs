@@ -27,9 +27,11 @@ for (const e of entries) {
   const repoKey = `${e.platform} ${repo}`;
   if (repo && seenRepo.has(repoKey)) report(e, `duplicate repo, already listed in ${seenRepo.get(repoKey).file}`);
   else seenRepo.set(repoKey, e);
-  if (e.data.name) {
-    if (seenName.has(e.data.name)) report(e, `duplicate name, already used by ${seenName.get(e.data.name).file}`);
-    else seenName.set(e.data.name, e);
+  // names keep their case, but "neve" and "NEVE" can't both exist (Windows/macOS folders, and confusing on norns)
+  const nameKey = String(e.data.name || '').toLowerCase();
+  if (nameKey) {
+    if (seenName.has(nameKey)) report(e, `duplicate name (ignoring case), already used by ${seenName.get(nameKey).file}`);
+    else seenName.set(nameKey, e);
   }
 }
 
@@ -54,8 +56,9 @@ if (online) {
       const c = await gh(`/repos/${slug}/contents/`);
       if (c.ok) {
         const files = await c.json();
-        if (!files.some((f) => f.type === 'file' && f.name.endsWith('.lua'))) {
-          report(e, 'no .lua file at the repo root; norns needs the main script at the top level');
+        // mods have no script at the root; norns loads them from lib/mod.lua
+        if (!files.some((f) => f.type === 'file' && f.name.endsWith('.lua')) && !(await gh(`/repos/${slug}/contents/lib/mod.lua`)).ok) {
+          report(e, 'no .lua file at the repo root (or lib/mod.lua for a mod); norns needs the main script at the top level');
         }
       }
     }
