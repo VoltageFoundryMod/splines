@@ -59,7 +59,7 @@ site.config.json          title, siteUrl, basePath, cname, repo, giscus, import 
 | `description` | ✓ | one line, ≤160 chars |
 | `tags` | ✓ | lowercase kebab-case list |
 | `requires` | | hardware from `KNOWN_REQUIRES` in `lib.mjs` (grid, arc, crow, midi, …) |
-| `ai` | ✓ | `none` \| `assisted` \| `generated`; `unknown` is allowed **only** with `source: imported` |
+| `ai` | ✓ | `none` \| `assisted`; `unknown` is allowed **only** with `source: imported` |
 | `source` | | `submitted` (default) \| `imported` |
 | `origin` | | where an import came from, e.g. `catalog:community`, `github-topic:norns` |
 | `added` | ✓* | `YYYY-MM-DD`, drives `/new/` and its feed. Required unless `source: imported`; the initial seed import has none so it doesn't flood "new". `npm run new` fills it in |

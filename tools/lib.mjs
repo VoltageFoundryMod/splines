@@ -20,7 +20,7 @@ export const PLATFORMS = {
 };
 export const DEFAULT_PLATFORM = 'norns';
 
-export const AI_VALUES = ['none', 'assisted', 'generated', 'unknown'];
+export const AI_VALUES = ['none', 'assisted', 'unknown'];
 export const SOURCE_VALUES = ['submitted', 'imported'];
 export const KNOWN_REQUIRES = ['grid', 'arc', 'crow', 'midi', 'audio-in', 'keyboard', 'jf', 'ansible', 'teletype', 'hid', 'osc', 'txo', 'er-301'];
 // Case is kept (the norns install folder is case-sensitive); uniqueness is checked ignoring case.

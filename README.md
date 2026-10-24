@@ -50,7 +50,7 @@ author: you
 description: one line, ≤160 chars
 tags: [sequencer, generative]
 requires: [grid, midi]     # optional hardware filter
-ai: assisted               # none | assisted | generated   (unknown = imported only)
+ai: assisted               # none | assisted   (unknown = imported only)
 license: MIT               # optional, otherwise read from GitHub
 discussion: https://...    # optional
 docs: https://...          # optional

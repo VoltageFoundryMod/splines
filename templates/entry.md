@@ -12,7 +12,7 @@ description: what it does, in one line
 tags: [sequencer]
 # Optional hardware it uses or needs: grid, arc, crow, midi, audio-in, keyboard, jf, ansible, teletype, hid, osc, txo, er-301
 requires: [grid]
-# Required disclosure: none | assisted | generated   (see the about page)
+# Required disclosure: none | assisted   (see the about page)
 ai: none
 license: MIT
 # Today's date (YYYY-MM-DD); puts the script on the "new" page and feed. `npm run new` fills it in.
